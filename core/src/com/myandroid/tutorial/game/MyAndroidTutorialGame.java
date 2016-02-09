@@ -16,7 +16,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.awt.Menu;
 import java.util.Iterator;
+
 
 public class MyAndroidTutorialGame extends ApplicationAdapter {
 	SpriteBatch batch;
@@ -30,7 +32,15 @@ public class MyAndroidTutorialGame extends ApplicationAdapter {
     //use GDX's array instead of the native Java Array or ArrayList because this one is more aware of GC (Garbage Collection)
     private Array<Rectangle> raindrops;
     private long lastDropTime;
-	
+
+    /*
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+        return true;
+    }
+	*/
+    
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
