@@ -16,6 +16,7 @@ public class MyAndroidTutorialGame extends Game {
     public static final int V_WIDTH=400;
     public static final int V_HEIGHT=208;
 	public SpriteBatch batch;
+    public static final float PPM = 100;
 
     /*
     @Override
@@ -28,6 +29,7 @@ public class MyAndroidTutorialGame extends Game {
     /*In tiled use TileLayers to make the level and ObjectLayers to make things you will reference programatically.
     Use "Ctrl + click" when drawing an object layer to make it snap to the grid.
     Get tiles from www.spriters-resource.com/nes/supermariobros/sheet/52571/
+    Get Textures for sprite sheets at libgdx-texturepacker-gui
      */
 
     @Override

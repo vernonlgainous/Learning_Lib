@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.myandroid.tutorial.game.MyAndroidTutorialGame;
@@ -14,7 +15,7 @@ import com.myandroid.tutorial.game.MyAndroidTutorialGame;
 /**
  * Created by vgainous on 3/2/2016.
  */
-public class Hud {
+public class Hud implements Disposable{
     public Stage stage;
     //must create a new viewport so that the level can move but the hud will stay put on screen
     private Viewport viewport;
@@ -60,5 +61,10 @@ public class Hud {
         table.add(countdownLabel).expandX();
 
         stage.addActor(table);
+    }
+
+    @Override
+    public void dispose() {
+        stage.dispose();
     }
 }
