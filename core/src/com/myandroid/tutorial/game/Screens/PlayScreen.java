@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.AtlasTmxMapLoader;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
@@ -33,6 +35,7 @@ import com.myandroid.tutorial.game.Scenes.Hud;
 import com.myandroid.tutorial.game.Scenes.TouchController;
 import com.myandroid.tutorial.game.Sprites.Hero;
 import com.myandroid.tutorial.game.Tools.B2WorldCreator;
+import com.myandroid.tutorial.game.Tools.WorldContactListener;
 
 import sun.rmi.runtime.Log;
 
@@ -41,6 +44,9 @@ import sun.rmi.runtime.Log;
  */
 public class PlayScreen implements Screen{
     private MyAndroidTutorialGame game;
+
+    private TextureAtlas atlas;
+
     private Hud hud;
     private OrthographicCamera gamecam;
     private Viewport gamePort;
@@ -61,6 +67,8 @@ public class PlayScreen implements Screen{
 
 
     public PlayScreen(MyAndroidTutorialGame game){
+        atlas = new TextureAtlas("Mario_and_Enemies.pack");
+
         this.game = game;
         //camera that will follow the player throughout the world.
         gamecam = new OrthographicCamera();
@@ -91,7 +99,13 @@ public class PlayScreen implements Screen{
         new B2WorldCreator(world, map);
 
         //create the hero in the game world
-        player = new Hero(world);
+        player = new Hero(world, this);
+
+        world.setContactListener(new WorldContactListener());
+    }
+
+    public TextureAtlas getAtlas(){
+        return atlas;
     }
 
     @Override
@@ -112,18 +126,21 @@ public class PlayScreen implements Screen{
             player.b2body.applyLinearImpulse(new Vector2(-0.1f,0), player.b2body.getWorldCenter(), true);
         }
         //a single touch is the same as a left button click
-        //if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && player.b2body.getLinearVelocity().x <=2)
-            //player.b2body.applyLinearImpulse(new Vector2(0.1f,0), player.b2body.getWorldCenter(), true);
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-            Gdx.app.log("INFO", "The touch point is " + Gdx.input.getX() + "," + Gdx.input.getY());
-            if (wLeftBounds.contains(Gdx.input.getX(), Gdx.input.getY()))
-                player.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), player.b2body.getWorldCenter(), true);
 
-            if (wRightBounds.contains(Gdx.input.getX(), Gdx.input.getY()))
-                player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getWorldCenter(), true);
-            if (wUpBounds.contains(Gdx.input.getX(),Gdx.input.getY()))
-                player.b2body.applyLinearImpulse(new Vector2(0,0.4f), player.b2body.getWorldCenter(), true);
+        for (int i = 0; i< 20; i++) { //this for loop is for handling multi-touch where 20 is the max number of touch points.
+            if (Gdx.input.isTouched(i)) {
+                Gdx.app.log("INFO", "The touch point is " + Gdx.input.getX() + "," + Gdx.input.getY());
+                if (wLeftBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().x >= -1.5)
+                    player.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), player.b2body.getWorldCenter(), true);
+                if (wRightBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().x <= 1.5)
+                    player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getWorldCenter(), true);
+                if (wUpBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().y <= 1.3f)
+                    player.b2body.applyLinearImpulse(new Vector2(0, 0.4f), player.b2body.getWorldCenter(), true);
+            }
         }
+        MassData massData = new MassData();
+        massData.mass = 0.2f;
+        player.b2body.setMassData(massData);
 
     }
 
@@ -132,6 +149,9 @@ public class PlayScreen implements Screen{
 
         //set how often the world will refresh
         world.step(1/60f, 6, 2);
+
+        //this is part of the work to add the sprite to the box2dBody
+        player.update(dt);
 
         //makes the camera follow the player
         gamecam.position.x = player.b2body.getPosition().x;
@@ -148,12 +168,17 @@ public class PlayScreen implements Screen{
         update(delta);
 
         //first thing in render method is to clear the screen
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(10/255f, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         renderer.render();
 
         b2dr.render(world, gamecam.combined);
+
+        game.batch.setProjectionMatrix(gamecam.combined);
+        game.batch.begin();
+        player.draw(game.batch);
+        game.batch.end();
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();

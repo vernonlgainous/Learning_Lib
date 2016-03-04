@@ -23,11 +23,8 @@ public class B2WorldCreator {
         FixtureDef fdef = new FixtureDef();
         Body body;
 
-        /*
-        All of this box2d stuff will eventually be taken out and all moved to their own class.
-         */
 
-        //create groud bodies/fixtures
+        //create ground bodies/fixtures
         //to get the index for layers open Tiled and in the layers tab start from 0 count from the bottom up
         for (MapObject object : map.getLayers().get(2).getObjects().getByType(RectangleMapObject.class)){
             Rectangle rect = ((RectangleMapObject) object).getRectangle();

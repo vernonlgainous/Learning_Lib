@@ -1,5 +1,6 @@
 package com.myandroid.tutorial.game.Sprites;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -17,7 +18,13 @@ public class Coin extends InteractiveTileObject{
 
     public Coin (World world, TiledMap map, Rectangle bounds){
         super(world, map, bounds);
+        fixture.setUserData(this);
+        setCategoryFilter(MyAndroidTutorialGame.COIN_BIT);
 
+    }
 
+    @Override
+    public void onHeadHit() {
+        Gdx.app.log("Coin", "collision");
     }
 }
