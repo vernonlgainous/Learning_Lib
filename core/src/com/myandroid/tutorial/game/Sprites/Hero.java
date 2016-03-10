@@ -29,9 +29,9 @@ public class Hero extends Sprite{
     private float stateTimer;
     private boolean runningRight;
 
-    public Hero(World world, PlayScreen screen){
+    public Hero(PlayScreen screen){
         super(screen.getAtlas().findRegion("little_mario"));
-        this.world = world;
+        this.world = screen.getWorld();
         currentState = State.STANDING;
         previousState = State.STANDING;
         stateTimer = 0;
@@ -116,7 +116,8 @@ public class Hero extends Sprite{
         CircleShape shape = new CircleShape();
         shape.setRadius(6/MyAndroidTutorialGame.PPM);
         fdef.filter.categoryBits = MyAndroidTutorialGame.HERO_BIT;
-        fdef.filter.maskBits=MyAndroidTutorialGame.DEFAULT_BIT | MyAndroidTutorialGame.COIN_BIT | MyAndroidTutorialGame.BRICK_BIT;
+        //define what other entities/tiled layers the hero can collide with.
+        fdef.filter.maskBits=MyAndroidTutorialGame.GROUND_BIT | MyAndroidTutorialGame.COIN_BIT | MyAndroidTutorialGame.BRICK_BIT | MyAndroidTutorialGame.ENEMY_BIT | MyAndroidTutorialGame.OBJECT_BIT;
 
 
         fdef.shape = shape;

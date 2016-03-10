@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -33,6 +34,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.myandroid.tutorial.game.MyAndroidTutorialGame;
 import com.myandroid.tutorial.game.Scenes.Hud;
 import com.myandroid.tutorial.game.Scenes.TouchController;
+import com.myandroid.tutorial.game.Sprites.Goomba;
 import com.myandroid.tutorial.game.Sprites.Hero;
 import com.myandroid.tutorial.game.Tools.B2WorldCreator;
 import com.myandroid.tutorial.game.Tools.WorldContactListener;
@@ -59,11 +61,14 @@ public class PlayScreen implements Screen{
     private Box2DDebugRenderer b2dr;
 
     private Hero player;
+    private Goomba goomba;
 
     private OrthographicCamera guicam;
     Rectangle wLeftBounds;
     Rectangle wRightBounds;
     Rectangle wUpBounds;
+
+    private Music music;
 
 
     public PlayScreen(MyAndroidTutorialGame game){
@@ -96,12 +101,20 @@ public class PlayScreen implements Screen{
         world = new World(new Vector2(0,-10), true);
         b2dr = new Box2DDebugRenderer();
 
-        new B2WorldCreator(world, map);
+        //new B2WorldCreator(world, map);
+        new B2WorldCreator(this);
 
         //create the hero in the game world
-        player = new Hero(world, this);
+        player = new Hero(this);
 
         world.setContactListener(new WorldContactListener());
+
+        music = MyAndroidTutorialGame.manager.get("audio/music/mario_music.ogg", Music.class);
+        music.setLooping(true);
+        music.setVolume(0.3f);
+        music.play();
+
+        goomba = new Goomba(this, .32f, .32f);
     }
 
     public TextureAtlas getAtlas(){
@@ -130,9 +143,9 @@ public class PlayScreen implements Screen{
         for (int i = 0; i< 20; i++) { //this for loop is for handling multi-touch where 20 is the max number of touch points.
             if (Gdx.input.isTouched(i)) {
                 Gdx.app.log("INFO", "The touch point is " + Gdx.input.getX() + "," + Gdx.input.getY());
-                if (wLeftBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().x >= -1.5)
+                if (wLeftBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().x >= -1.1)
                     player.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), player.b2body.getWorldCenter(), true);
-                if (wRightBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().x <= 1.5)
+                if (wRightBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().x <= 1.1)
                     player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getWorldCenter(), true);
                 if (wUpBounds.contains(Gdx.input.getX(i), Gdx.input.getY(i)) && player.b2body.getLinearVelocity().y <= 1.3f)
                     player.b2body.applyLinearImpulse(new Vector2(0, 0.4f), player.b2body.getWorldCenter(), true);
@@ -152,6 +165,8 @@ public class PlayScreen implements Screen{
 
         //this is part of the work to add the sprite to the box2dBody
         player.update(dt);
+        goomba.update(dt);
+        hud.update(dt);
 
         //makes the camera follow the player
         gamecam.position.x = player.b2body.getPosition().x;
@@ -178,6 +193,7 @@ public class PlayScreen implements Screen{
         game.batch.setProjectionMatrix(gamecam.combined);
         game.batch.begin();
         player.draw(game.batch);
+        goomba.draw(game.batch);
         game.batch.end();
 
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
@@ -188,6 +204,13 @@ public class PlayScreen implements Screen{
     public void resize(int width, int height) {
         gamePort.update(width, height);
 
+    }
+
+    public TiledMap getMap(){
+        return map;
+    }
+    public World getWorld(){
+        return world;
     }
 
     @Override
